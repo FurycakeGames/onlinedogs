@@ -41,13 +41,8 @@ var playState = {
       DOGS[data].destroy();
     })
 
-    socket.on('usergone', function(data){
-      console.log(data)
-      OBSTACLE_A[data].destroy();
-    })
 
     socket.on('newPlayer', function(data){
-      console.log('poto')
       DOGS[data.id] = game.add.sprite(data.x, data.y, 'husky')
       DOGS[data.id].id = data.id;
       DOGS[data.id].smoothed = false;
@@ -63,7 +58,6 @@ var playState = {
     });
 
     socket.on('createPlayers', function(data){
-      console.log('poto')
       for (var i in data){
         DOGS[data[i].id] = game.add.sprite(data[i].x, data[i].y, 'husky');
         DOGS[data[i].id].id = data[i].id;
@@ -81,7 +75,6 @@ var playState = {
     });
 
     socket.on('createObstacleA', function(data){
-      console.log('putito')
       for (var i in data){
         OBSTACLE_A[data[i].id] = game.add.sprite(data[i].x, data[i].y + 24, 'obstacle');
         OBSTACLE_A[data[i].id].scale.setTo(0.5, 0.5);
@@ -90,17 +83,14 @@ var playState = {
     })
 
     socket.on('newObstacleA', function(data){
-      console.log('putito')
       OBSTACLE_A[data.id] = game.add.sprite(data.x, data.y + 24, 'obstacle');
       OBSTACLE_A[data.id].scale.setTo(0.5, 0.5);
       OBSTACLE_A[data.id].id = data.id;
     })
 
     socket.on('obstacleAPositions', function(data){
-      console.log('potazo')
       for (var i in data){
         OBSTACLE_A[data[i].id].x = data[i].x;
-        console.log(OBSTACLE_A[data[i].id].x)
       }
     });
 
@@ -121,7 +111,6 @@ var playState = {
       }
     })
 
-    socket.on('')
 
     document.addEventListener("keydown", onDocumentKeyUp, false);
     function onDocumentKeyUp(event) {
@@ -130,6 +119,10 @@ var playState = {
         socket.emit('jump', socketId)
       }
     };
+
+    game.input.onDown.add(function(){
+      socket.emit('jump', socketId)
+    }, this)
 
     socket.on('gameSpeed', function(data){
       back_3.tilePosition.x -= data * 0.0015;
