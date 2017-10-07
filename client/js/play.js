@@ -47,7 +47,6 @@ var playState = {
     })
 
     socket.on('newPlayer', function(data){
-      console.log('poto')
       DOGS[data.id] = game.add.sprite(data.x, data.y, 'husky')
       DOGS[data.id].id = data.id;
       DOGS[data.id].smoothed = false;
@@ -63,7 +62,6 @@ var playState = {
     });
 
     socket.on('createPlayers', function(data){
-      console.log('poto')
       for (var i in data){
         DOGS[data[i].id] = game.add.sprite(data[i].x, data[i].y, 'husky');
         DOGS[data[i].id].id = data[i].id;

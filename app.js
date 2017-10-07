@@ -37,7 +37,7 @@ var Player = function(id){
 		ySpeed: 0,
 		xAccel: -0.13,
 		yAccel: 0.4,
-		xDrag: 0.1,
+		xDrag: 0.17,
 		onFloor: true,
 		tripping: false,
 		dashing: false,
@@ -56,6 +56,7 @@ var Player = function(id){
 				self.xSpeed += self.xDrag;
 			}
 		}
+		self.xAccel = Math.max(-0.07 - self.x / 2000, -0.25);
 		self.xSpeed += self.xAccel;
 		self.ySpeed += self.yAccel;
 		self.x += self.xSpeed;
@@ -68,10 +69,12 @@ var Player = function(id){
 
 	self.jump = function(){
 		if (self.y >= 197){
+			self.dashing = false;
 			self.ySpeed = -6;
 		}
-		if (self.y < 197){
-			self.xSpeed = 7;
+		if (self.y < 197 && !self.dashing){
+			self.dashing = true;
+			self.xSpeed = 7.4;
 			self.ySpeed = -2;
 		}
 	};
