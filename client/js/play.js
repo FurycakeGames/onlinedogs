@@ -105,16 +105,18 @@ var playState = {
 
     socket.on('newPositions', function(data){
       for (var i in data){
-        DOGS[data[i].id].x = data[i].x
-        DOGS[data[i].id].y = data[i].y
-        if (data[i].ySpeed > 1){
-          DOGS[data[i].id].animations.play('jumpdown');
-        }
-        else if(data[i].ySpeed < 0){
-          DOGS[data[i].id].animations.play('jumpup');
-        }
-        else if(data[i].y == 200){
-          DOGS[data[i].id].animations.play('running');
+        if (DOGS[data[i].id]){
+          DOGS[data[i].id].x = data[i].x
+          DOGS[data[i].id].y = data[i].y
+          if (data[i].ySpeed > 1){
+            DOGS[data[i].id].animations.play('jumpdown');
+          }
+          else if(data[i].ySpeed < 0){
+            DOGS[data[i].id].animations.play('jumpup');
+          }
+          else if(data[i].y == 200){
+            DOGS[data[i].id].animations.play('running');
+          }
         }
       }
     })
