@@ -246,10 +246,12 @@ setInterval(function(){
 	for (var i in OBSTACLE_A_LIST){
 		OBSTACLE_A_LIST[i].update();
 		var obstacleA = OBSTACLE_A_LIST[i];
-		pack.push({
-			x: obstacleA.x,
-			id: obstacleA.id,
-		});
+		if (obstacleA){
+			pack.push({
+				x: obstacleA.x,
+				id: obstacleA.id,
+			});
+		}
 	}
 
 	for (var i in SOCKET_LIST){
