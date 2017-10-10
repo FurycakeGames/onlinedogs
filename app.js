@@ -154,7 +154,7 @@ var Obstacle_a = function(id){
 		}
 		self.x -= self.speed;
 		if (self.x < -20){
-			delete[OBSTACLE_A_LIST, self.id];
+			delete OBSTACLE_A_LIST[self.id];
 			for (var i in SOCKET_LIST){
 				var socket = SOCKET_LIST[i];
 				socket.emit('deleteObstacleA', self.id);
