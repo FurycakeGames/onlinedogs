@@ -40,8 +40,10 @@ var Player = function(id){
 		xDrag: 0.17,
 		onFloor: true,
 		tripping: false,
+		rolling_timer: 0,
 		dashing: false,
 		rolling: false,
+		rolling_timer: 0,
 	};
 
 	self.updatePosition = function(){
@@ -64,24 +66,69 @@ var Player = function(id){
 		if (self.y > 200){
 			self.y = 200;
 			self.ySpeed = 0;
+			self.dashing = false;
+		}
+		//rolling
+		if (self.rolling_timer > 0){
+			self.rolling_timer -= 1;
+		}
+		else if (self.rolling){
+			self.rolling = false;
+			self.xSpeed = 0;
+		}
+		if (self.tripping_timer > 0){
+			self.tripping_timer -= 1;
+		}
+		else if (self.tripping){
+			self.tripping = false;
+			self.xSpeed = 0;
+		}
+//COLLISSIONS
+		for (var i in PLAYER_LIST){
+			if (self !== PLAYER_LIST[i]){
+				//DASHING COLLISION
+				if (self.x < PLAYER_LIST[i].x + 30 && self.x > PLAYER_LIST[i].x - 15 && self.y < PLAYER_LIST[i].y && self.y > PLAYER_LIST[i].y - 30 && self.dashing && !PLAYER_LIST[i].tripping){
+					PLAYER_LIST[i].tripping = true;
+					PLAYER_LIST[i].tripping_timer = 15;
+					PLAYER_LIST[i].xSpeed -= 4;
+					self.xSpeed += 3;
+					self.ySpeed = -5;
+				}
+				//ROLLING COLLISION
+				if (self.x > PLAYER_LIST[i].x && self.x < PLAYER_LIST[i].x + 30 && self.rolling && !PLAYER_LIST[i].tripping && PLAYER_LIST[i].y > 190){
+					PLAYER_LIST[i].tripping = true;
+					PLAYER_LIST[i].tripping_timer = 15;
+					PLAYER_LIST[i].xSpeed -= 4;
+					self.xSpeed += 6;
+					self.ySpeed = -5;
+					self.rolling = false;
+					self.rolling_timer = 0;
+				}
+			}
 		}
 	};
 
 	self.jump = function(){
-		if (self.y >= 197){
-			self.dashing = false;
-			self.ySpeed = -6;
-		}
-		if (self.y < 197 && !self.dashing){
-			self.dashing = true;
-			self.xSpeed = 7.4;
-			self.ySpeed = -2;
+		if (!self.tripping && !self.rolling){
+			if (self.y >= 197 && !self.rolling){
+				self.dashing = false;
+				self.ySpeed = -6;
+			}
+			if (self.y < 197 && !self.dashing){
+				self.dashing = true;
+				self.xSpeed = 7.4;
+				self.ySpeed = -2;
+			}
 		}
 	};
-	self.trip = function(){
-		self.tripping = true;
-		socket.broadcast('fall', self.id)
-	}
+
+	self.roll = function(){
+		if (self.y >= 197 && !self.rolling && !self.tripping){
+			self.rolling = true;
+			self.rolling_timer = 10;
+			self.xSpeed -= 5;
+		}
+	};
 
 	return self;
 };
@@ -96,17 +143,18 @@ var Obstacle_a = function(id){
 		id: id,
 	};
 
-	self.checkCollision = function(){
+	self.update = function(){
+		//checkcollision
 		for (var i in PLAYER_LIST){
-			if (i.y < 250 && i.x < self.x + 32 && i.x > self.x - 32){
-				i.trip();
+			if (PLAYER_LIST[i].x + 50 > self.x && PLAYER_LIST[i].x + 10 < self.x && PLAYER_LIST[i].y > 170 && !PLAYER_LIST[i].tripping){
+				PLAYER_LIST[i].tripping = true;
+				PLAYER_LIST[i].tripping_timer = 25;
+				PLAYER_LIST[i].xSpeed -= 3;
 			}
 		}
-	};
-	self.update = function(){
 		self.x -= self.speed;
 		if (self.x < -20){
-			delete[OBSTACLE_A_LIST, self]
+			delete[OBSTACLE_A_LIST, self];
 			for (var i in SOCKET_LIST){
 				var socket = SOCKET_LIST[i];
 				socket.emit('deleteObstacleA', self.id);
@@ -157,8 +205,13 @@ io.sockets.on('connection', function(socket){
 		PLAYER_LIST[data].jump();
 	});
 
+	socket.on('roll', function(data){
+		PLAYER_LIST[data].roll();
+	});
 
-  socket.on('disconnect', function(){
+
+
+ 	socket.on('disconnect', function(){
 		delete SOCKET_LIST[socket.id];
 		delete PLAYER_LIST[socket.id];
 		console.log('disconnected ' + socket_id)
@@ -178,6 +231,8 @@ setInterval(function(){
 			xSpeed: player.xSpeed,
 			ySpeed: player.ySpeed,
 			id:player.id,
+			tripping: player.tripping,
+			rolling: player.rolling,
 		});
 	}
 

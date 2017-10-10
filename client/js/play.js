@@ -41,7 +41,7 @@ var playState = {
       DOGS[data].destroy();
     })
 
-    socket.on('usergone', function(data){
+    socket.on('deleteObstacleA', function(data){
       console.log(data)
       OBSTACLE_A[data].destroy();
     })
@@ -58,7 +58,7 @@ var playState = {
       DOGS[data.id].animations.add('jumpdown',[9]);
       DOGS[data.id].animations.add('stop', [0]);
       DOGS[data.id].animations.add('kill',[10]);
-      DOGS[data.id].animations.play('running');  
+      DOGS[data.id].animations.play('running');
     });
 
     socket.on('createPlayers', function(data){
@@ -74,7 +74,10 @@ var playState = {
         DOGS[data[i].id].animations.add('jumpdown',[9]);
         DOGS[data[i].id].animations.add('stop', [0]);
         DOGS[data[i].id].animations.add('kill',[10]);
-        DOGS[data[i].id].animations.play('running');  
+        DOGS[data[i].id].animations.play('running');
+        if (data[i].id === socketId){
+          DOGS[data[i].id].tint = 0x7777FF
+        }
       }
     });
 
@@ -106,28 +109,44 @@ var playState = {
         if (DOGS[data[i].id]){
           DOGS[data[i].id].x = data[i].x
           DOGS[data[i].id].y = data[i].y
-          if (data[i].ySpeed > 1){
-            DOGS[data[i].id].animations.play('jumpdown');
+          if (!data[i].rolling && !data[i].tripping){
+            if (data[i].ySpeed > 1){
+              DOGS[data[i].id].animations.play('jumpdown');
+            }
+            else if(data[i].ySpeed < 0){
+              DOGS[data[i].id].animations.play('jumpup');
+            }
+            else if(data[i].y == 200){
+              DOGS[data[i].id].animations.play('running');
+            }            
           }
-          else if(data[i].ySpeed < 0){
-            DOGS[data[i].id].animations.play('jumpup');
+          else if(data[i].tripping){
+            DOGS[data[i].id].animations.play('kill')
           }
-          else if(data[i].y == 200){
-            DOGS[data[i].id].animations.play('running');
+          else if(data[i].rolling){
+            DOGS[data[i].id].animations.play('stop');
           }
         }
       }
     })
 
     game.input.onDown.add(function(){
+      if (game.input.x > 240){
         socket.emit('jump', socketId)
+      }
+      else {
+        socket.emit('roll', socketId)        
+      }
     }, this)
 
-    document.addEventListener("keydown", onDocumentKeyUp, false);
-    function onDocumentKeyUp(event) {
+    document.addEventListener("keydown", onDocumentKeyDown, false);
+    function onDocumentKeyDown(event) {
       var keyCode = event.which;
       if (keyCode == 90) {
         socket.emit('jump', socketId)
+      }
+      if (keyCode == 77) {
+        socket.emit('roll', socketId)
       }
     };
 
