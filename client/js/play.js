@@ -1,5 +1,8 @@
 var playState = {
   create: function(){
+
+    console.log('version pototongo')
+
     Phaser.Canvas.setImageRenderingCrisp(game.canvas);
     var username = window.location.search.substring(10, window.location.search.length);
 
