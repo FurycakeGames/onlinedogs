@@ -46,7 +46,9 @@ var playState = {
 
     socket.on('deleteObstacleA', function(data){
       console.log(data)
-      OBSTACLE_A[data].destroy();
+      if (OBSTACLE_A[data]){
+        OBSTACLE_A[data].destroy();
+      } 
     })
 
     socket.on('newPlayer', function(data){
