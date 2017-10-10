@@ -44,9 +44,13 @@ var Player = function(id){
 		dashing: false,
 		rolling: false,
 		rolling_timer: 0,
+		stamina: 100,
 	};
 
 	self.updatePosition = function(){
+		if (self.stamina < 100){
+			self.stamina = Math.min(self.stamina + 2, 100)
+		}
 		if (Math.abs(self.xSpeed) > 0){
 			if (Math.abs(self.xSpeed) < self.xDrag * 1.5){
 				self.xSpeed = 0;
@@ -114,19 +118,21 @@ var Player = function(id){
 				self.dashing = false;
 				self.ySpeed = -6;
 			}
-			if (self.y < 197 && !self.dashing){
+			if (self.y < 197 && !self.dashing && self.stamina === 100){
 				self.dashing = true;
 				self.xSpeed = 7.4;
 				self.ySpeed = -2;
+				self.stamina = 0;
 			}
 		}
 	};
 
 	self.roll = function(){
-		if (self.y >= 197 && !self.rolling && !self.tripping){
+		if (self.y >= 197 && !self.rolling && !self.tripping && self.stamina == 100){
 			self.rolling = true;
 			self.rolling_timer = 10;
 			self.xSpeed -= 5;
+			self.stamina = 0;
 		}
 	};
 
@@ -233,6 +239,7 @@ setInterval(function(){
 			id:player.id,
 			tripping: player.tripping,
 			rolling: player.rolling,
+			stamina: player.stamina,
 		});
 	}
 
