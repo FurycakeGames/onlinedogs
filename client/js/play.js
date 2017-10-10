@@ -62,7 +62,6 @@ var playState = {
     })
 
     socket.on('deleteObstacleA', function(data){
-      console.log(data)
       if (OBSTACLE_A[data]){
         OBSTACLE_A[data].destroy();
       } 
@@ -191,9 +190,16 @@ var playState = {
     };
 
     socket.on('gameSpeed', function(data){
-      back_3.tilePosition.x -= data * 0.0015;
+
+      game.add.tween(back_3.tilePosition).to( { x: back_3.tilePosition.x -= data * 0.0015 }, 10);
+      game.add.tween(back_4.tilePosition).to( { x: back_4.tilePosition.x -= data * 0.05 }, 10);
+      game.add.tween(floor.tilePosition).to( { x: floor.tilePosition.x -= data * 0.5 }, 10);
+
+
+/*      back_3.tilePosition.x -= data * 0.0015;
       back_4.tilePosition.x -= data * 0.05;
       floor.tilePosition.x -= data * 0.5;
+*/ 
     })
 
 
