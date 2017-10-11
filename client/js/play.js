@@ -1,9 +1,8 @@
 var playState = {
   create: function(){
 
-    console.log('version polunga')
+    console.log('version poringa')
 
-    Phaser.Canvas.setImageRenderingCrisp(game.canvas);
     var username = window.location.search.substring(10, window.location.search.length);
 
     var background_group = game.add.group();
@@ -13,7 +12,6 @@ var playState = {
     game_group.y = game.height / 2 - 15;
     game_group.pivot.x = game.width / 2;
     game_group.pivot.y = game.height / 2;
-
 
 
     var DOGS = {};
@@ -44,16 +42,28 @@ var playState = {
     floor.smoothed = false;
     game_group.add(floor)
 
-    var style = { font: "20px Arial", fill: "#ffffff", align: "left" };
+    var style = { font: "18px Arial", fill: "#ffffff", align: "left" };
+    var score_style = { font: "18px Arial", fill: "#ffffff", align: "right" };
     var stamina_text = game.add.text(20, 20, "Stamina: 100", style);
-
+    var scoreboard_text = game.add.text(460, 20, "", score_style);
+    scoreboard_text.anchor.x = 1;
     
+    var time_text = game.add.text(200, 20, "Time: ", style);
+
     var PLAYER_LIST = {};
 
     socket.on('emitPlayers', function(data){
       PLAYER_LIST = data;
     })
     
+    socket.on('setScores', function(data){
+      var scores_text = 'SCORES: \n';
+      for (var i in data){
+        scores_text += data[i].username + ': ' + data[i].score + '\n'
+      }
+      scoreboard_text.text = scores_text;
+    })
+
     socket.emit('setUsername', username);
 
     socket.on('usergone', function(data){
@@ -68,21 +78,25 @@ var playState = {
     })
 
     socket.on('newPlayer', function(data){
-      DOGS[data.id] = game.add.sprite(data.x, data.y, 'husky')
-      game_group.add(DOGS[data.id])
-      DOGS[data.id].id = data.id;
-      DOGS[data.id].smoothed = false;
-      DOGS[data.id].scale.setTo(2, 2);
-      DOGS[data.id].animations.add('walking', [1,1,2,2,3,3,2,2],6,true);
-      DOGS[data.id].animations.add('running', [4,5,6,7],12,true);
-      DOGS[data.id].animations.add('sprinting',[4,5,6,7],12,true);
-      DOGS[data.id].animations.add('jumpup',[8]);
-      DOGS[data.id].animations.add('jumpdown',[9]);
-      DOGS[data.id].animations.add('stop', [0]);
-      DOGS[data.id].animations.add('kill',[10]);
-      DOGS[data.id].animations.play('running');
-
-
+      if(data.id !== socketId){
+        DOGS[data.id] = game.add.sprite(data.x, data.y, 'husky')
+        game_group.add(DOGS[data.id])
+        DOGS[data.id].id = data.id;
+        DOGS[data.id].smoothed = false;
+        DOGS[data.id].scale.setTo(2, 2);
+        DOGS[data.id].animations.add('walking', [1,1,2,2,3,3,2,2],6,true);
+        DOGS[data.id].animations.add('running', [4,5,6,7],12,true);
+        DOGS[data.id].animations.add('sprinting',[4,5,6,7],12,true);
+        DOGS[data.id].animations.add('jumpup',[8]);
+        DOGS[data.id].animations.add('jumpdown',[9]);
+        DOGS[data.id].animations.add('stop', [0]);
+        DOGS[data.id].animations.add('kill',[10]);
+        DOGS[data.id].animations.play('running');
+        nametag = game.add.text(20, -5, data.username, style);
+        nametag.anchor.x = 0.5;
+        nametag.scale.setTo(0.5, 0.5)
+        DOGS[data.id].addChild(nametag);
+      }
     });
 
     socket.on('createPlayers', function(data){
@@ -102,6 +116,12 @@ var playState = {
         DOGS[data[i].id].animations.play('running');
         if (data[i].id === socketId){
           DOGS[data[i].id].tint = 0x7777FF;
+        }
+        else{
+          nametag = game.add.text(20, -5, data[i].username, style);
+          nametag.anchor.x = 0.5;
+          nametag.scale.setTo(0.5, 0.5)
+          DOGS[data[i].id].addChild(nametag);
         }
       }
     });
@@ -157,7 +177,7 @@ var playState = {
           }
          //stamina text
           if (data[i].id === socketId){
-            stamina_text.text = 'Stamina: ' + data[i].stamina;
+            stamina_text.text = 'Stamina: ' + Math.ceil(data[i].stamina);
             if (data[i].stamina === 100){
               stamina_text.tint = 0xFFFFFF;
             }
@@ -190,16 +210,11 @@ var playState = {
     };
 
     socket.on('gameSpeed', function(data){
+      back_3.tilePosition.x -= data[0] * 0.0015;
+      back_4.tilePosition.x -= data[0] * 0.05;
+      floor.tilePosition.x -= data[0] * 0.5;
 
-      game.add.tween(back_3.tilePosition).to( { x: back_3.tilePosition.x -= data * 0.0015 }, 10);
-      game.add.tween(back_4.tilePosition).to( { x: back_4.tilePosition.x -= data * 0.05 }, 10);
-      game.add.tween(floor.tilePosition).to( { x: floor.tilePosition.x -= data * 0.5 }, 10);
-
-
-/*      back_3.tilePosition.x -= data * 0.0015;
-      back_4.tilePosition.x -= data * 0.05;
-      floor.tilePosition.x -= data * 0.5;
-*/ 
+      time_text.text = 'Time: ' + data[1];
     })
 
 

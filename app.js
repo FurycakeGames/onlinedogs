@@ -25,6 +25,36 @@ var SOCKET_LIST = {};
 var PLAYER_LIST = {};
 var OBSTACLE_A_LIST = {};
 
+
+function sortPositions(){
+	//sort
+	var array = [];
+	var array_size = 0;
+	for (var i in PLAYER_LIST){
+		array.push([PLAYER_LIST[i].x, PLAYER_LIST[i].id]);
+		array_size += 1;
+	}
+	array.sort(sortFunction);
+	//set scores
+	for (var i = 0; i < array_size; i++){
+		PLAYER_LIST[array[i][1]].score += i;
+	}
+	for (var i in SOCKET_LIST){
+		var socket = SOCKET_LIST[i];
+		socket.emit('setScores', PLAYER_LIST);
+	}
+}
+
+function sortFunction(a, b){
+  if (a[0] === b[0]){
+    return 0;
+  }
+  else{
+    return (a[0] < b[0]) ? -1 : 1;
+  }
+}
+
+
 var Player = function(id){
 	var self = {
 		x: Math.random() * 400 + 20,
@@ -49,7 +79,7 @@ var Player = function(id){
 
 	self.updatePosition = function(){
 		if (self.stamina < 100){
-			self.stamina = Math.min(self.stamina + 2, 100)
+			self.stamina = Math.min(self.stamina + 3 - (self.x / 250), 100)
 		}
 		if (Math.abs(self.xSpeed) > 0){
 			if (Math.abs(self.xSpeed) < self.xDrag * 1.5){
@@ -65,7 +95,7 @@ var Player = function(id){
 		self.xAccel = Math.max(-0.07 - self.x / 2000, -0.25);
 		self.xSpeed += self.xAccel;
 		self.ySpeed += self.yAccel;
-		self.x += self.xSpeed;
+		self.x = Math.min(self.x + self.xSpeed, 400);
 		self.y += self.ySpeed;
 		if (self.y > 200){
 			self.y = 200;
@@ -103,7 +133,7 @@ var Player = function(id){
 					PLAYER_LIST[i].tripping = true;
 					PLAYER_LIST[i].tripping_timer = 15;
 					PLAYER_LIST[i].xSpeed -= 4;
-					self.xSpeed += 6;
+					self.xSpeed = 7;
 					self.ySpeed = -5;
 					self.rolling = false;
 					self.rolling_timer = 0;
@@ -140,6 +170,7 @@ var Player = function(id){
 };
 
 var obstacle_a_timer = 200;
+var score_timer = 1000;
 
 var Obstacle_a = function(id){
 	var self = {
@@ -152,7 +183,7 @@ var Obstacle_a = function(id){
 	self.update = function(){
 		//checkcollision
 		for (var i in PLAYER_LIST){
-			if (PLAYER_LIST[i].x + 50 > self.x && PLAYER_LIST[i].x + 10 < self.x && PLAYER_LIST[i].y > 170 && !PLAYER_LIST[i].tripping){
+			if (PLAYER_LIST[i].x + 70 > self.x && PLAYER_LIST[i].x + 20 < self.x && PLAYER_LIST[i].y > 170 && !PLAYER_LIST[i].tripping){
 				PLAYER_LIST[i].tripping = true;
 				PLAYER_LIST[i].tripping_timer = 25;
 				PLAYER_LIST[i].xSpeed -= 3;
@@ -192,20 +223,22 @@ io.sockets.on('connection', function(socket){
 	var socket_id = socket.id;
 	SOCKET_LIST[socket.id] = socket;
 
-	var player = Player(socket.id);
-	PLAYER_LIST[socket.id] = player;
+
 
 	console.log('socket connection ' + socket.id);
 
 	socket.emit('emitSocketId', socket_id);
 
 	socket.on('setUsername', function(data){
+		var player = Player(socket.id);
+		PLAYER_LIST[socket.id] = player;
 		PLAYER_LIST[socket.id].username = data;
 		socket.emit('createPlayers', PLAYER_LIST);
-		socket.emit('createObstacleA', OBSTACLE_A_LIST)
+		socket.emit('createObstacleA', OBSTACLE_A_LIST);
+		socket.broadcast.emit('newPlayer', PLAYER_LIST[socket.id]);
+		socket.emit('setScores', PLAYER_LIST);
 	})
 
-	socket.broadcast.emit('newPlayer', player);
 
 	socket.on('jump', function(data){
 		PLAYER_LIST[data].jump();
@@ -264,13 +297,19 @@ setInterval(function(){
 	for (var i in SOCKET_LIST){
 		var socket = SOCKET_LIST[i];
 		socket.emit('obstacleAPositions', pack);
-		socket.emit('gameSpeed', game_speed);
+		socket.emit('gameSpeed', [game_speed, score_timer]);
 	}
 
 	obstacle_a_timer -= 1;
 	if (obstacle_a_timer < 0) {
 		obstacle_a_timer = 200;
 		createObstacleA();
+	}
+
+	score_timer -= 1;
+	if (score_timer < 0) {
+		score_timer = 600;
+		sortPositions();
 	}
 
 }, 1000/30);

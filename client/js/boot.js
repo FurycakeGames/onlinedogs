@@ -14,6 +14,10 @@ var ASTEROID_LIST = {};
 var bootState = {
 
   init:function() {
+
+    Phaser.Canvas.setImageRenderingCrisp(game.canvas);
+
+
   	if(game.device.desktop) {
 		// desktop view - desktop code here
 
