@@ -185,8 +185,8 @@ var Obstacle_a = function(id){
 		for (var i in PLAYER_LIST){
 			if (PLAYER_LIST[i].x + 70 > self.x && PLAYER_LIST[i].x + 20 < self.x && PLAYER_LIST[i].y > 170 && !PLAYER_LIST[i].tripping){
 				PLAYER_LIST[i].tripping = true;
-				PLAYER_LIST[i].tripping_timer = 25;
-				PLAYER_LIST[i].xSpeed -= 2;
+				PLAYER_LIST[i].tripping_timer = 50;
+				PLAYER_LIST[i].xSpeed -= 2.5;
 			}
 		}
 		self.x -= self.speed;
