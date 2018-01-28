@@ -15,6 +15,7 @@ app.get('/', function(req, res){
 });
 app.use('/client', express.static(__dirname + '/client'));
 
+
 serv.listen(process.env.PORT || 2000);
 console.log('Server started.')
 
@@ -27,7 +28,7 @@ function checkDistance(a, b){
 	return Math.sqrt(dx*dx+dy*dy+dz*dz);
 }
 
-var game_speed = 6;
+var game_speed = 10;
 var playing = false;
 var players_connected = 0;
 var players_alive = 0;
@@ -77,41 +78,6 @@ createObstacleA = function(){
 		socket.emit('newObstacleA', obstacle);
 	}
 };
-
-
-var Bone = function(id, x, y, ){
-	var self = {
-		x: Math.random() * 200 + 600,
-		y: 215,
-		speed: game_speed,
-		id: id,
-	};
-
-	self.update = function(){
-		//checkcollision
-		for (var i in PLAYER_LIST){
-			if (PLAYER_LIST[i].x + 70 > self.x && PLAYER_LIST[i].x + 20 < self.x && PLAYER_LIST[i].y > 170 && !PLAYER_LIST[i].tripping){
-				PLAYER_LIST[i].tripping = true;
-				PLAYER_LIST[i].tripping_timer = 50;
-				PLAYER_LIST[i].xSpeed -= 2.5;
-			}
-		}
-		self.x -= self.speed;
-		if (self.x < -20){
-			delete OBSTACLE_A_LIST[self.id];
-			for (var i in SOCKET_LIST){
-				var socket = SOCKET_LIST[i];
-				socket.emit('deleteObstacleA', self.id);
-			}
-		}
-	}
-	return self;
-};
-
-
-
-
-
 
 
 
@@ -200,7 +166,7 @@ setInterval(function(){
 	for (var i in SOCKET_LIST){
 		var socket = SOCKET_LIST[i];
 		socket.emit('obstacleAPositions', pack);
-		socket.emit('gameSpeed', [game_speed, score_timer]);
+		socket.emit('gameSpeed', [game_speed]);
 	}
 
 	obstacle_a_timer -= 1;
@@ -212,7 +178,7 @@ setInterval(function(){
 	score_timer -= 1;
 	if (score_timer < 0) {
 		score_timer = 600;
-		sortPositions();
+//		sortPositions();
 	}
 
 	for (var i in SOCKET_LIST){
