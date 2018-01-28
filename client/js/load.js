@@ -7,6 +7,7 @@ var loadState = {
     game.load.image('back_3','assets/back_3.png');
     game.load.image('back_4','assets/back_4.png');
     game.load.image('floor','assets/floor.png');
+    game.load.image('spring','assets/spring.png');    
     game.load.image('obstacle','assets/obstacle.png');
 
   },

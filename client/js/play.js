@@ -128,7 +128,7 @@ var playState = {
 
     socket.on('createObstacleA', function(data){
       for (var i in data){
-        OBSTACLE_A[data[i].id] = game.add.sprite(data[i].x, data[i].y + 24, 'obstacle');
+        OBSTACLE_A[data[i].id] = game.add.sprite(data[i].x, data[i].y + 42, 'spring');
         game_group.add(OBSTACLE_A[data[i].id])
         OBSTACLE_A[data[i].id].scale.setTo(0.5, 0.5);
         OBSTACLE_A[data[i].id].id = data[i].id;
@@ -136,7 +136,7 @@ var playState = {
     })
 
     socket.on('newObstacleA', function(data){
-      OBSTACLE_A[data.id] = game.add.sprite(data.x, data.y + 24, 'obstacle');
+      OBSTACLE_A[data.id] = game.add.sprite(data.x, data.y + 42, 'spring');
       game_group.add(OBSTACLE_A[data.id])
       OBSTACLE_A[data.id].scale.setTo(0.5, 0.5);
       OBSTACLE_A[data.id].id = data.id;

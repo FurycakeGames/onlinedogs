@@ -2,6 +2,14 @@ var express = require('express');
 var app = express();
 var serv = require('http').Server(app);
 
+
+//CLASSES LOAD
+
+var m = require('./classes')
+
+
+
+
 app.get('/', function(req, res){
 	res.sendFile(__dirname + '/client/index.html');
 });
@@ -10,11 +18,13 @@ app.use('/client', express.static(__dirname + '/client'));
 serv.listen(process.env.PORT || 2000);
 console.log('Server started.')
 
+
+
 function checkDistance(a, b){
-  var dx = a.x - b.x;
-  var dy = a.y - b.y;
-  var dz = a.z - b.z;
-  return Math.sqrt(dx*dx+dy*dy+dz*dz);
+	var dx = a.x - b.x;
+	var dy = a.y - b.y;
+	var dz = a.z - b.z;
+	return Math.sqrt(dx*dx+dy*dy+dz*dz);
 }
 
 var game_speed = 6;
@@ -46,133 +56,30 @@ function sortPositions(){
 }
 
 function sortFunction(a, b){
-  if (a[0] === b[0]){
-    return 0;
-  }
-  else{
-    return (a[0] < b[0]) ? -1 : 1;
-  }
+	if (a[0] === b[0]){
+		return 0;
+	}
+	else{
+		return (a[0] < b[0]) ? -1 : 1;
+	}
 }
 
-
-var Player = function(id){
-	var self = {
-		x: Math.random() * 400 + 20,
-		y: 200,
-		id: id,
-		alive: true,
-		score: 0,
-		username: 0,
-		xSpeed: 0,
-		ySpeed: 0,
-		xAccel: -0.13,
-		yAccel: 0.4,
-		xDrag: 0.17,
-		onFloor: true,
-		tripping: false,
-		rolling_timer: 0,
-		dashing: false,
-		rolling: false,
-		rolling_timer: 0,
-		stamina: 100,
-	};
-
-	self.updatePosition = function(){
-		if (self.stamina < 100){
-			self.stamina = Math.min(self.stamina + 3 - (self.x / 250), 100)
-		}
-		if (Math.abs(self.xSpeed) > 0){
-			if (Math.abs(self.xSpeed) < self.xDrag * 1.5){
-				self.xSpeed = 0;
-			}
-			else if(self.xSpeed > 0){
-				self.xSpeed -= self.xDrag;
-			}
-			else{
-				self.xSpeed += self.xDrag;
-			}
-		}
-		self.xAccel = Math.max(-0.07 - self.x / 2000, -0.25);
-		self.xSpeed += self.xAccel;
-		self.ySpeed += self.yAccel;
-		self.x = Math.min(self.x + self.xSpeed, 400);
-		self.y += self.ySpeed;
-		if (self.y > 200){
-			self.y = 200;
-			self.ySpeed = 0;
-			self.dashing = false;
-		}
-		//rolling
-		if (self.rolling_timer > 0){
-			self.rolling_timer -= 1;
-		}
-		else if (self.rolling){
-			self.rolling = false;
-			self.xSpeed = 0;
-		}
-		if (self.tripping_timer > 0){
-			self.tripping_timer -= 1;
-		}
-		else if (self.tripping){
-			self.tripping = false;
-			self.xSpeed = 0;
-		}
-//COLLISSIONS
-		for (var i in PLAYER_LIST){
-			if (self !== PLAYER_LIST[i]){
-				//DASHING COLLISION
-				if (self.x < PLAYER_LIST[i].x + 30 && self.x > PLAYER_LIST[i].x - 15 && self.y < PLAYER_LIST[i].y && self.y > PLAYER_LIST[i].y - 30 && self.dashing && !PLAYER_LIST[i].tripping){
-					PLAYER_LIST[i].tripping = true;
-					PLAYER_LIST[i].tripping_timer = 15;
-					PLAYER_LIST[i].xSpeed -= 4;
-					self.xSpeed += 3;
-					self.ySpeed = -5;
-				}
-				//ROLLING COLLISION
-				if (self.x > PLAYER_LIST[i].x && self.x < PLAYER_LIST[i].x + 30 && self.rolling && !PLAYER_LIST[i].tripping && PLAYER_LIST[i].y > 190){
-					PLAYER_LIST[i].tripping = true;
-					PLAYER_LIST[i].tripping_timer = 15;
-					PLAYER_LIST[i].xSpeed -= 4;
-					self.xSpeed = 7;
-					self.ySpeed = -5;
-					self.rolling = false;
-					self.rolling_timer = 0;
-				}
-			}
-		}
-	};
-
-	self.jump = function(){
-		if (!self.tripping && !self.rolling){
-			if (self.y >= 197 && !self.rolling){
-				self.dashing = false;
-				self.ySpeed = -6;
-			}
-			if (self.y < 197 && !self.dashing && self.stamina === 100){
-				self.dashing = true;
-				self.xSpeed = 7.4;
-				self.ySpeed = -2;
-				self.stamina = 0;
-			}
-		}
-	};
-
-	self.roll = function(){
-		if (self.y >= 197 && !self.rolling && !self.tripping && self.stamina == 100){
-			self.rolling = true;
-			self.rolling_timer = 10;
-			self.xSpeed -= 5;
-			self.stamina = 0;
-		}
-	};
-
-	return self;
-};
 
 var obstacle_a_timer = 200;
 var score_timer = 1000;
 
-var Obstacle_a = function(id){
+
+createObstacleA = function(){
+	var obstacle = m.Obstacle_a(Math.random(), PLAYER_LIST, OBSTACLE_A_LIST, game_speed, SOCKET_LIST);
+	OBSTACLE_A_LIST[obstacle.id] = obstacle;
+	for (var i in SOCKET_LIST){
+		var socket = SOCKET_LIST[i];
+		socket.emit('newObstacleA', obstacle);
+	}
+};
+
+
+var Bone = function(id, x, y, ){
 	var self = {
 		x: Math.random() * 200 + 600,
 		y: 215,
@@ -201,14 +108,10 @@ var Obstacle_a = function(id){
 	return self;
 };
 
-createObstacleA = function(){
-	var obstacle = Obstacle_a(Math.random());
-	OBSTACLE_A_LIST[obstacle.id] = obstacle;
-	for (var i in SOCKET_LIST){
-		var socket = SOCKET_LIST[i];
-		socket.emit('newObstacleA', obstacle);
-	}
-};
+
+
+
+
 
 
 
@@ -230,7 +133,7 @@ io.sockets.on('connection', function(socket){
 	socket.emit('emitSocketId', socket_id);
 
 	socket.on('setUsername', function(data){
-		var player = Player(socket.id);
+		var player = m.Player(socket.id, PLAYER_LIST);
 		PLAYER_LIST[socket.id] = player;
 		PLAYER_LIST[socket.id].username = data;
 		socket.emit('createPlayers', PLAYER_LIST);
@@ -250,12 +153,12 @@ io.sockets.on('connection', function(socket){
 
 
 
- 	socket.on('disconnect', function(){
+	socket.on('disconnect', function(){
 		delete SOCKET_LIST[socket.id];
 		delete PLAYER_LIST[socket.id];
 		console.log('disconnected ' + socket_id)
 		socket.broadcast.emit('usergone', socket_id);
-  })
+	})
 });
 
 
@@ -311,5 +214,11 @@ setInterval(function(){
 		score_timer = 600;
 		sortPositions();
 	}
+
+	for (var i in SOCKET_LIST){
+		var socket = SOCKET_LIST[i];
+		socket.emit('setScores', PLAYER_LIST);
+	}
+
 
 }, 1000/30);
