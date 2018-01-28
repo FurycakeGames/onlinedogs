@@ -1,6 +1,19 @@
 var playState = {
   create: function(){
 
+    goFullScreen = function() {
+//      this.game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
+      if (this.game.scale.isFullScreen) {
+        this.game.scale.stopFullScreen();
+      } 
+      else {
+        this.game.scale.startFullScreen();
+        this.game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
+      }
+    }
+
+
+
     console.log('version poringa')
 
     var username = window.location.search.substring(10, window.location.search.length);
@@ -44,7 +57,7 @@ var playState = {
 
     var style = { font: "18px Arial", fill: "#ffffff", align: "left" };
     var score_style = { font: "18px Arial", fill: "#ffffff", align: "right" };
-    var stamina_text = game.add.text(20, 20, "Stamina: 100", style);
+//    var stamina_text = game.add.text(20, 20, "Stamina: 100", style);
     var scoreboard_text = game.add.text(460, 20, "", score_style);
     scoreboard_text.anchor.x = 1;
     
@@ -85,8 +98,8 @@ var playState = {
         DOGS[data.id].smoothed = false;
         DOGS[data.id].scale.setTo(2, 2);
         DOGS[data.id].animations.add('walking', [1,1,2,2,3,3,2,2],6,true);
-        DOGS[data.id].animations.add('running', [4,5,6,7],12,true);
-        DOGS[data.id].animations.add('sprinting',[4,5,6,7],12,true);
+        DOGS[data.id].animations.add('running', [4,5,6,7],20 + Math.random() * 2,true);
+        DOGS[data.id].animations.add('sprinting',[4,5,6,7],20 + Math.random() * 2,true);
         DOGS[data.id].animations.add('jumpup',[8]);
         DOGS[data.id].animations.add('jumpdown',[9]);
         DOGS[data.id].animations.add('stop', [0]);
@@ -107,8 +120,8 @@ var playState = {
         DOGS[data[i].id].smoothed = false;
         DOGS[data[i].id].scale.setTo(2, 2);
         DOGS[data[i].id].animations.add('walking', [1,1,2,2,3,3,2,2],6,true);
-        DOGS[data[i].id].animations.add('running', [4,5,6,7],12,true);
-        DOGS[data[i].id].animations.add('sprinting',[4,5,6,7],12,true);
+        DOGS[data[i].id].animations.add('running', [4,5,6,7],20 + Math.random() * 2, true);
+        DOGS[data[i].id].animations.add('sprinting',[4,5,6,7],20 + Math.random() * 2, true);
         DOGS[data[i].id].animations.add('jumpup',[8]);
         DOGS[data[i].id].animations.add('jumpdown',[9]);
         DOGS[data[i].id].animations.add('stop', [0]);
@@ -176,7 +189,7 @@ var playState = {
             DOGS[data[i].id].animations.play('jumpdown');
           }
          //stamina text
-          if (data[i].id === socketId){
+/*          if (data[i].id === socketId){
             stamina_text.text = 'Stamina: ' + Math.ceil(data[i].stamina);
             if (data[i].stamina === 100){
               stamina_text.tint = 0xFFFFFF;
@@ -185,6 +198,7 @@ var playState = {
               stamina_text.tint = 0xFF0000;
             }
           }
+*/
         }
       }
     })
@@ -213,10 +227,14 @@ var playState = {
       back_3.tilePosition.x -= data[0] * 0.0015;
       back_4.tilePosition.x -= data[0] * 0.05;
       floor.tilePosition.x -= data[0] * 0.5;
-
-      time_text.text = 'Time: ' + data[1];
     })
 
+
+    var fullscreen = this.add.sprite(50, 50, 'fullscreen');
+    fullscreen.anchor.set(0.5);
+    fullscreen.inputEnabled = true;
+
+    fullscreen.events.onInputDown.add(goFullScreen, this);
 
   },
 

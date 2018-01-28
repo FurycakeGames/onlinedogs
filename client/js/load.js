@@ -9,6 +9,7 @@ var loadState = {
     game.load.image('floor','assets/floor.png');
     game.load.image('spring','assets/spring.png');    
     game.load.image('obstacle','assets/obstacle.png');
+    game.load.image('fullscreen','assets/fullscreen.png');
 
   },
    create: function(){

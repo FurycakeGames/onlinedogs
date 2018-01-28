@@ -16,6 +16,8 @@ var Player = function(id, PLAYER_LIST){
 		rolling_timer: 0,
 		dashing: false,
 		rolling: false,
+		canmove: false,
+		canmove_timer: 0,
 		rolling_timer: 0,
 		stamina: 100,
 	};
@@ -24,7 +26,7 @@ var Player = function(id, PLAYER_LIST){
 
 		//friction
 		if (self.xSpeed < -0.4 && self.y == 200 && !self.rolling && !self.tripping){
-			self.xSpeed = -0.4
+			self.xSpeed = -0.4;
 		}
 
 		//is in front
@@ -34,9 +36,14 @@ var Player = function(id, PLAYER_LIST){
 			self.ySpeed = -11;
 			self.xAccel = 0.7;
 			self.dashing = false;
+			self.canmove = false;
 		}
-		//is in back
 
+		if (self.canmove_timer > 0){
+			self.canmove_timer -= 1;
+		}
+
+		//is in back
 		if (self.x < 20){
 			self.score -= 5;
 			self.xSpeed = 0;
@@ -46,6 +53,8 @@ var Player = function(id, PLAYER_LIST){
 			self.xAccel = 0;
 			self.y = 120;
 			self.x = 200;
+			self.canmove = false;
+			self.canmove_timer = 20;
 		}
 
 
@@ -78,6 +87,9 @@ var Player = function(id, PLAYER_LIST){
 		self.x = Math.min(self.x + self.xSpeed, 500);
 		self.y += self.ySpeed;
 		if (self.y > 200){
+			if (self.canmove_timer == 0){
+				self.canmove = true;
+			}
 			self.y = 200;
 			self.ySpeed = 0;
 			self.dashing = false;
@@ -127,7 +139,7 @@ var Player = function(id, PLAYER_LIST){
 	};
 
 	self.jump = function(){
-		if (!self.tripping && !self.rolling){
+		if (!self.tripping && !self.rolling && self.canmove){
 			if (self.y >= 197 && !self.rolling){
 				self.dashing = false;
 				self.ySpeed = -9;
@@ -143,7 +155,7 @@ var Player = function(id, PLAYER_LIST){
 	};
 
 	self.roll = function(){
-		if (self.y >= 197 && !self.rolling && !self.tripping && self.stamina == 100){
+		if (self.y >= 197 && !self.rolling && !self.tripping && self.stamina == 100 && self.canmove){
 			self.rolling = true;
 			self.rolling_timer = 12;
 			self.xSpeed -= 12;
