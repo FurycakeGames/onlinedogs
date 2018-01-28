@@ -3,14 +3,14 @@ var playState = {
 
     goFullScreen = function() {
 //      this.game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
-      if (this.game.scale.isFullScreen) {
+/*      if (this.game.scale.isFullScreen) {
         this.game.scale.stopFullScreen();
       } 
       else {
         this.game.scale.startFullScreen();
         this.game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
       }
-    }
+*/    }
 
 
 
@@ -28,8 +28,23 @@ var playState = {
 
 
     var DOGS = {};
+    var DOGS_HUD = {};
+    var DOGS_HUD_TAG = {};
+    var DOGS_HUD_SCORE = {};
     var OBSTACLE_A = {};
     //background create
+    var BACK = {};
+
+    for (i = 12; i >= 1; i--) {
+      BACK[i] = this.add.tileSprite(240, 0, 512, 512, 'bg_amusement_' + i)
+      BACK[i].anchor.x = 0.5
+      background_group.add(BACK[i])
+    };
+
+
+
+
+/*
     back_1 = this.add.sprite(0,0,'back_1');
     back_1.scale.set(4);
     back_1.smoothed = false;
@@ -54,12 +69,12 @@ var playState = {
     floor.scale.set(2);
     floor.smoothed = false;
     game_group.add(floor)
-
+*/
     var style = { font: "18px Arial", fill: "#ffffff", align: "left" };
+    var hud_tag_style = { font: "18px Arial", fill: "#ffffff", align: "center" };
     var score_style = { font: "18px Arial", fill: "#ffffff", align: "right" };
 //    var stamina_text = game.add.text(20, 20, "Stamina: 100", style);
-    var scoreboard_text = game.add.text(460, 20, "", score_style);
-    scoreboard_text.anchor.x = 1;
+
     
     var time_text = game.add.text(200, 20, "Time: ", style);
 
@@ -70,11 +85,9 @@ var playState = {
     })
     
     socket.on('setScores', function(data){
-      var scores_text = 'SCORES: \n';
       for (var i in data){
-        scores_text += data[i].username + ': ' + data[i].score + '\n'
+        DOGS_HUD_SCORE[i].text = data[i].score;
       }
-      scoreboard_text.text = scores_text;
     })
 
     socket.emit('setUsername', username);
@@ -82,6 +95,9 @@ var playState = {
     socket.on('usergone', function(data){
       console.log(data)
       DOGS[data].destroy();
+      DOGS_HUD[data].destroy();
+      DOGS_HUD_TAG[data].destroy();
+      DOGS_HUD_SCORE[data].destroy();
     })
 
     socket.on('deleteObstacleA', function(data){
@@ -109,6 +125,18 @@ var playState = {
         nametag.anchor.x = 0.5;
         nametag.scale.setTo(0.5, 0.5)
         DOGS[data.id].addChild(nametag);
+
+        //hud
+        DOGS_HUD[data.id] = game.add.sprite((data.slot - 1) * 85 + 70, 260, 'fullscreen')
+        DOGS_HUD[data.id].anchor.x = 0.5
+        DOGS_HUD[data.id].anchor.y = 0.5
+
+        DOGS_HUD_TAG[data.id] = game.add.bitmapText((data.slot - 1) * 85 + 70, 300, 'opensans', data.username, 30);
+        DOGS_HUD_TAG[data.id].anchor.x = 0.5
+        DOGS_HUD_TAG[data.id].anchor.y = 0.5
+        DOGS_HUD_SCORE[data.id] = game.add.bitmapText((data.slot - 1) * 85 + 70, 230, 'acme', data.score,32);
+        DOGS_HUD_SCORE[data.id].anchor.x = 0.5
+        DOGS_HUD_SCORE[data.id].anchor.y = 0.5
       }
     });
 
@@ -136,12 +164,26 @@ var playState = {
           nametag.scale.setTo(0.5, 0.5)
           DOGS[data[i].id].addChild(nametag);
         }
+
+        //hud
+        DOGS_HUD[data[i].id] = game.add.sprite((data[i].slot - 1) * 85 + 70, 260, 'fullscreen')
+        DOGS_HUD[data[i].id].anchor.x = 0.5
+        DOGS_HUD[data[i].id].anchor.y = 0.5
+
+        DOGS_HUD_TAG[data[i].id] = game.add.bitmapText((data[i].slot - 1) * 85 + 70, 300, 'opensans', data[i].username, 30);
+        DOGS_HUD_TAG[data[i].id].anchor.x = 0.5
+        DOGS_HUD_TAG[data[i].id].anchor.y = 0.5
+
+        DOGS_HUD_SCORE[data[i].id] = game.add.bitmapText((data[i].slot - 1) * 85 + 70, 230, 'acme', data[i].score,32);
+        DOGS_HUD_SCORE[data[i].id].anchor.x = 0.5
+        DOGS_HUD_SCORE[data[i].id].anchor.y = 0.5
+
       }
     });
 
     socket.on('createObstacleA', function(data){
       for (var i in data){
-        OBSTACLE_A[data[i].id] = game.add.sprite(data[i].x, data[i].y + 42, 'spring');
+        OBSTACLE_A[data[i].id] = game.add.sprite(data[i].x, data[i].y + 8, 'spring');
         game_group.add(OBSTACLE_A[data[i].id])
         OBSTACLE_A[data[i].id].scale.setTo(0.5, 0.5);
         OBSTACLE_A[data[i].id].id = data[i].id;
@@ -149,7 +191,7 @@ var playState = {
     })
 
     socket.on('newObstacleA', function(data){
-      OBSTACLE_A[data.id] = game.add.sprite(data.x, data.y + 42, 'spring');
+      OBSTACLE_A[data.id] = game.add.sprite(data.x, data.y + 8, 'spring');
       game_group.add(OBSTACLE_A[data.id])
       OBSTACLE_A[data.id].scale.setTo(0.5, 0.5);
       OBSTACLE_A[data.id].id = data.id;
@@ -170,7 +212,7 @@ var playState = {
       for (var i in data){
         if (DOGS[data[i].id]){
           DOGS[data[i].id].x = data[i].x
-          DOGS[data[i].id].y = data[i].y
+          DOGS[data[i].id].y = data[i].y - 34
           if (!data[i].rolling && !data[i].tripping){
             if (data[i].ySpeed > 1){
               DOGS[data[i].id].animations.play('jumpdown');
@@ -223,10 +265,21 @@ var playState = {
       }
     };
 
+
+
+    var back_factor = [1, 0, 0.95, 0.7, 0.6, 0.05, 0.00000, 0.025, 0.17, 0.1, 0.05, 0];
+
     socket.on('gameSpeed', function(data){
-      back_3.tilePosition.x -= data[0] * 0.0015;
+
+      for (i = 1; i <= 12; i++) {
+        BACK[i].tilePosition.x -= back_factor[i - 1] * data[0]
+
+      }
+
+/*      back_3.tilePosition.x -= data[0] * 0.0015;
       back_4.tilePosition.x -= data[0] * 0.05;
       floor.tilePosition.x -= data[0] * 0.5;
+*/ 
     })
 
 

@@ -1,5 +1,6 @@
-var Player = function(id, PLAYER_LIST){
+var Player = function(id, PLAYER_LIST, slot){
 	var self = {
+		slot:slot,
 		x: Math.random() * 400 + 20,
 		y: 200,
 		id: id,
@@ -113,7 +114,7 @@ var Player = function(id, PLAYER_LIST){
 		for (var i in PLAYER_LIST){
 			if (self !== PLAYER_LIST[i]){
 				//DASHING COLLISION
-				if (self.x < PLAYER_LIST[i].x + 30 && self.x > PLAYER_LIST[i].x - 15 && self.y < PLAYER_LIST[i].y && self.y > PLAYER_LIST[i].y - 30 && self.dashing && !PLAYER_LIST[i].tripping){
+				if (self.x < PLAYER_LIST[i].x + 30 && self.x > PLAYER_LIST[i].x - 15 && self.y < PLAYER_LIST[i].y && self.y > PLAYER_LIST[i].y - 30 && self.dashing && !PLAYER_LIST[i].tripping && PLAYER_LIST[i].canmove){
 					self.xSpeed += 4;
 					self.ySpeed = -5;
 					self.score += 1;
@@ -123,7 +124,7 @@ var Player = function(id, PLAYER_LIST){
 //					PLAYER_LIST[i].score -= Math.min(PLAYER_LIST[i].score, 1);
 				}
 				//ROLLING COLLISION
-				if (self.x > PLAYER_LIST[i].x && self.x < PLAYER_LIST[i].x + 30 && self.rolling && !PLAYER_LIST[i].tripping && PLAYER_LIST[i].y > 190){
+				if (self.x > PLAYER_LIST[i].x && self.x < PLAYER_LIST[i].x + 30 && self.rolling && !PLAYER_LIST[i].tripping && PLAYER_LIST[i].y > 190 && PLAYER_LIST[i].canmove){
 					self.xSpeed = 7;
 					self.ySpeed = -5;
 					self.rolling = false;
@@ -147,7 +148,7 @@ var Player = function(id, PLAYER_LIST){
 			}
 			if (self.y < 197 && !self.dashing && self.stamina === 100){
 				self.dashing = true;
-				self.xSpeed += 10;
+				self.xSpeed += 8;
 				self.ySpeed = -5;
 				self.stamina = 0;
 			}

@@ -28,11 +28,20 @@ function checkDistance(a, b){
 	return Math.sqrt(dx*dx+dy*dy+dz*dz);
 }
 
-var game_speed = 10;
+var game_speed = 7;
 var playing = false;
 var players_connected = 0;
 var players_alive = 0;
 var SOCKET_LIST = {};
+var PLAYER_SLOTS = {
+		1: 0,
+		2: 0,
+		3: 0,
+		4: 0,
+		5: 0
+};
+console.log(PLAYER_SLOTS);
+
 var PLAYER_LIST = {};
 var OBSTACLE_A_LIST = {};
 
@@ -83,8 +92,7 @@ createObstacleA = function(){
 
 var io = require('socket.io')(serv,{});
 io.sockets.on('connection', function(socket){
-	players_connected += 1;
-	players_alive += 1;
+
 	if (playing === false){
 
 	}
@@ -93,35 +101,52 @@ io.sockets.on('connection', function(socket){
 	SOCKET_LIST[socket.id] = socket;
 
 
-
-	console.log('socket connection ' + socket.id);
-
 	socket.emit('emitSocketId', socket_id);
 
 	socket.on('setUsername', function(data){
-		var player = m.Player(socket.id, PLAYER_LIST);
-		PLAYER_LIST[socket.id] = player;
-		PLAYER_LIST[socket.id].username = data;
+
+		for (i = 1; i <= 5; i++) {
+		    if (PLAYER_SLOTS[i] == 0) {
+					var player = m.Player(socket.id, PLAYER_LIST, i);
+					PLAYER_SLOTS[i] = socket.id;
+					PLAYER_LIST[socket.id] = player;
+					PLAYER_LIST[socket.id].username = data;
+					socket.broadcast.emit('newPlayer', PLAYER_LIST[socket.id]);
+					console.log('socket connection ' + socket.id + ' with slot ' + i);
+		    	break;
+		    }
+		}
 		socket.emit('createPlayers', PLAYER_LIST);
 		socket.emit('createObstacleA', OBSTACLE_A_LIST);
-		socket.broadcast.emit('newPlayer', PLAYER_LIST[socket.id]);
 		socket.emit('setScores', PLAYER_LIST);
+
+
+
+
 	})
 
 
 	socket.on('jump', function(data){
-		PLAYER_LIST[data].jump();
+		if (PLAYER_LIST[data]){
+			PLAYER_LIST[data].jump();
+		}
 	});
 
 	socket.on('roll', function(data){
-		PLAYER_LIST[data].roll();
+		if (PLAYER_LIST[data]){
+			PLAYER_LIST[data].roll();
+		}
 	});
 
 
 
 	socket.on('disconnect', function(){
+		if (PLAYER_LIST[socket.id]){
+			PLAYER_SLOTS[PLAYER_LIST[socket.id].slot] = 0;
+		}
 		delete SOCKET_LIST[socket.id];
 		delete PLAYER_LIST[socket.id];
+		players_connected =- 1;
 		console.log('disconnected ' + socket_id)
 		socket.broadcast.emit('usergone', socket_id);
 	})

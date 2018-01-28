@@ -7,15 +7,12 @@ socket.on('emitSocketId', function(data){
 	console.log(data);
 })
 
-var PLAYER_LIST = {};
-var ASTEROID_LIST = {};
-
 
 var bootState = {
 
   init:function() {
 
-    Phaser.Canvas.setImageRenderingCrisp(game.canvas);
+//    Phaser.Canvas.setImageRenderingCrisp(game.canvas);
 
 
   	if(game.device.desktop) {
@@ -23,7 +20,7 @@ var bootState = {
 
 		 
 		} else {
-	    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+//	    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 		}
 		game.scale.pageAlignHorizontally = true;
 		game.scale.pageAlignVertically = true;
