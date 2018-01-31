@@ -28,7 +28,7 @@ function checkDistance(a, b){
 	return Math.sqrt(dx*dx+dy*dy+dz*dz);
 }
 
-var game_speed = 7;
+var game_speed = 14;
 var playing = false;
 var players_connected = 0;
 var players_alive = 0;
@@ -161,12 +161,10 @@ setInterval(function(){
 		pack.push({
 			x: player.x,
 			y: player.y,
-			xSpeed: player.xSpeed,
 			ySpeed: player.ySpeed,
 			id:player.id,
 			tripping: player.tripping,
 			rolling: player.rolling,
-			stamina: player.stamina,
 		});
 	}
 
@@ -200,16 +198,10 @@ setInterval(function(){
 		createObstacleA();
 	}
 
-	score_timer -= 1;
-	if (score_timer < 0) {
-		score_timer = 600;
-//		sortPositions();
-	}
-
 	for (var i in SOCKET_LIST){
 		var socket = SOCKET_LIST[i];
 		socket.emit('setScores', PLAYER_LIST);
 	}
 
 
-}, 1000/30);
+}, 1000/15);

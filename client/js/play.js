@@ -13,18 +13,19 @@ var playState = {
 */    }
 
 
-
-    console.log('version poringa')
-
     var username = window.location.search.substring(10, window.location.search.length);
 
     var background_group = game.add.group();
+
+    var particles_group = game.add.group();
 
     var game_group = game.add.group();
     game_group.x = game.width / 2;
     game_group.y = game.height / 2 - 15;
     game_group.pivot.x = game.width / 2;
     game_group.pivot.y = game.height / 2;
+
+
 
 
     var DOGS = {};
@@ -41,42 +42,22 @@ var playState = {
       background_group.add(BACK[i])
     };
 
+    var car = game.add.sprite(-8, 0, 'car');
+    game.add.tween(car).to( {x: 0}, 1000, Phaser.Easing.Sinusoidal.In, true, 0, -1, true)
 
 
 
-/*
-    back_1 = this.add.sprite(0,0,'back_1');
-    back_1.scale.set(4);
-    back_1.smoothed = false;
-    background_group.add(back_1)
+    background_group.add(car)
+    car.animations.add('walk', Phaser.Animation.generateFrameNames('car', 1, 4, '.png'), 10, true, false);
+    car.animations.play('walk');
 
-    back_2 = this.add.sprite(0,0,'back_2');
-    back_2.scale.set(4);
-    back_2.smoothed = false;
-    background_group.add(back_2)
-
-    back_3 = this.add.tileSprite(0, -50, 256, 256, 'back_3');
-    back_3.scale.set(3);
-    back_3.smoothed = false;
-    background_group.add(back_3)
-
-    back_4 = this.add.tileSprite(0, -50, 256, 256, 'back_4');
-    back_4.scale.set(3);
-    back_4.smoothed = false;
-    background_group.add(back_4)
-
-    floor = this.add.tileSprite(-10, -162, 256, 256, 'floor');
-    floor.scale.set(2);
-    floor.smoothed = false;
-    game_group.add(floor)
-*/
     var style = { font: "18px Arial", fill: "#ffffff", align: "left" };
+    var nametagstyle = { font: "13px Tahoma", fill: "#ffffff", align: "left" };
     var hud_tag_style = { font: "18px Arial", fill: "#ffffff", align: "center" };
     var score_style = { font: "18px Arial", fill: "#ffffff", align: "right" };
-//    var stamina_text = game.add.text(20, 20, "Stamina: 100", style);
 
     
-    var time_text = game.add.text(200, 20, "Time: ", style);
+//    var time_text = game.add.text(200, 20, "Time: ", style);
 
     var PLAYER_LIST = {};
 
@@ -108,33 +89,26 @@ var playState = {
 
     socket.on('newPlayer', function(data){
       if(data.id !== socketId){
-        DOGS[data.id] = game.add.sprite(data.x, data.y, 'husky')
+        DOGS[data.id] = game.add.sprite(data.x, data.y, 'sunny')
         game_group.add(DOGS[data.id])
         DOGS[data.id].id = data.id;
-        DOGS[data.id].smoothed = false;
-        DOGS[data.id].scale.setTo(2, 2);
-        DOGS[data.id].animations.add('walking', [1,1,2,2,3,3,2,2],6,true);
-        DOGS[data.id].animations.add('running', [4,5,6,7],20 + Math.random() * 2,true);
-        DOGS[data.id].animations.add('sprinting',[4,5,6,7],20 + Math.random() * 2,true);
-        DOGS[data.id].animations.add('jumpup',[8]);
-        DOGS[data.id].animations.add('jumpdown',[9]);
-        DOGS[data.id].animations.add('stop', [0]);
-        DOGS[data.id].animations.add('kill',[10]);
+        DOGS[data.id].dustcounter = 0;
+        DOGS[data.id].anchor.y = 0.17;
+
+        DOGS[data.id].animations.add('running', Phaser.Animation.generateFrameNames('run', 1, 4, '.png'), 18, true, false);
+        DOGS[data.id].animations.add('jumpup', ['jump2.png'], 18 + Math.random() * 2, true, false);
+        DOGS[data.id].animations.add('jumpdown', ['jump1.png'], 18 + Math.random() * 2, true, false);
         DOGS[data.id].animations.play('running');
-        nametag = game.add.text(20, -5, data.username, style);
-        nametag.anchor.x = 0.5;
-        nametag.scale.setTo(0.5, 0.5)
-        DOGS[data.id].addChild(nametag);
+
 
         //hud
-        DOGS_HUD[data.id] = game.add.sprite((data.slot - 1) * 85 + 70, 260, 'fullscreen')
+        DOGS_HUD[data.id] = game.add.sprite((data.slot - 1) * 85 + 48, 270, 'fullscreen')
         DOGS_HUD[data.id].anchor.x = 0.5
         DOGS_HUD[data.id].anchor.y = 0.5
 
-        DOGS_HUD_TAG[data.id] = game.add.bitmapText((data.slot - 1) * 85 + 70, 300, 'opensans', data.username, 30);
-        DOGS_HUD_TAG[data.id].anchor.x = 0.5
+        DOGS_HUD_TAG[data.id] = game.add.text((data.slot - 1) * 85 + 35, 304, data.username, nametagstyle);
         DOGS_HUD_TAG[data.id].anchor.y = 0.5
-        DOGS_HUD_SCORE[data.id] = game.add.bitmapText((data.slot - 1) * 85 + 70, 230, 'acme', data.score,32);
+        DOGS_HUD_SCORE[data.id] = game.add.bitmapText((data.slot - 1) * 85 + 85, 270, 'acme', data.score,28);
         DOGS_HUD_SCORE[data.id].anchor.x = 0.5
         DOGS_HUD_SCORE[data.id].anchor.y = 0.5
       }
@@ -142,39 +116,39 @@ var playState = {
 
     socket.on('createPlayers', function(data){
       for (var i in data){
-        DOGS[data[i].id] = game.add.sprite(data[i].x, data[i].y, 'husky');
+        DOGS[data[i].id] = game.add.sprite(data[i].x, data[i].y, 'sunny');
         game_group.add(DOGS[data[i].id])
         DOGS[data[i].id].id = data[i].id;
-        DOGS[data[i].id].smoothed = false;
-        DOGS[data[i].id].scale.setTo(2, 2);
-        DOGS[data[i].id].animations.add('walking', [1,1,2,2,3,3,2,2],6,true);
-        DOGS[data[i].id].animations.add('running', [4,5,6,7],20 + Math.random() * 2, true);
-        DOGS[data[i].id].animations.add('sprinting',[4,5,6,7],20 + Math.random() * 2, true);
-        DOGS[data[i].id].animations.add('jumpup',[8]);
-        DOGS[data[i].id].animations.add('jumpdown',[9]);
-        DOGS[data[i].id].animations.add('stop', [0]);
-        DOGS[data[i].id].animations.add('kill',[10]);
+        DOGS[data[i].id].dustcounter = 0;
+        DOGS[data[i].id].anchor.y = 0.17;
+
+
+        DOGS[data[i].id].animations.add('running', Phaser.Animation.generateFrameNames('run', 1, 4, '.png'), 18, true, false);
+        DOGS[data[i].id].animations.add('jumpup', ['jump2.png'], 18 + Math.random() * 2, true, false);
+        DOGS[data[i].id].animations.add('jumpdown', ['jump1.png'], 18 + Math.random() * 2, true, false);
+        DOGS[data[i].id].animations.add('kicking', Phaser.Animation.generateFrameNames('kick', 1, 2, '.png'), 10, false, false);
+        DOGS[data[i].id].animations.play('running');
+
+
+
         DOGS[data[i].id].animations.play('running');
         if (data[i].id === socketId){
-          DOGS[data[i].id].tint = 0x7777FF;
+          DOGS[data[i].id].tint = 0xAAAAFF;
         }
         else{
-          nametag = game.add.text(20, -5, data[i].username, style);
-          nametag.anchor.x = 0.5;
-          nametag.scale.setTo(0.5, 0.5)
-          DOGS[data[i].id].addChild(nametag);
         }
 
         //hud
-        DOGS_HUD[data[i].id] = game.add.sprite((data[i].slot - 1) * 85 + 70, 260, 'fullscreen')
-        DOGS_HUD[data[i].id].anchor.x = 0.5
-        DOGS_HUD[data[i].id].anchor.y = 0.5
+        DOGS_HUD[data[i].id] = game.add.sprite((data[i].slot - 1) * 85 + 48, 270, 'sunnyface')
+        DOGS_HUD[data[i].id].anchor.x = 0.5;
+        DOGS_HUD[data[i].id].anchor.y = 0.5;
+        DOGS_HUD[data[i].id].scale.setTo(2);
 
-        DOGS_HUD_TAG[data[i].id] = game.add.bitmapText((data[i].slot - 1) * 85 + 70, 300, 'opensans', data[i].username, 30);
-        DOGS_HUD_TAG[data[i].id].anchor.x = 0.5
+
+        DOGS_HUD_TAG[data[i].id] = game.add.text((data[i].slot - 1) * 85 + 35, 304, data[i].username, nametagstyle);
         DOGS_HUD_TAG[data[i].id].anchor.y = 0.5
 
-        DOGS_HUD_SCORE[data[i].id] = game.add.bitmapText((data[i].slot - 1) * 85 + 70, 230, 'acme', data[i].score,32);
+        DOGS_HUD_SCORE[data[i].id] = game.add.bitmapText((data[i].slot - 1) * 85 + 85, 270, 'acme', data[i].score,28);
         DOGS_HUD_SCORE[data[i].id].anchor.x = 0.5
         DOGS_HUD_SCORE[data[i].id].anchor.y = 0.5
 
@@ -200,7 +174,9 @@ var playState = {
     socket.on('obstacleAPositions', function(data){
       for (var i in data){
         if (OBSTACLE_A[data[i].id]){
-          OBSTACLE_A[data[i].id].x = data[i].x;
+          game.add.tween(OBSTACLE_A[data[i].id]).to( {x: data[i].x}, 50, Phaser.Easing.Linear.None, true, 0, 0, false)
+
+
         }
       }
     });
@@ -211,8 +187,14 @@ var playState = {
     socket.on('newPositions', function(data){
       for (var i in data){
         if (DOGS[data[i].id]){
-          DOGS[data[i].id].x = data[i].x
-          DOGS[data[i].id].y = data[i].y - 34
+//          DOGS[data[i].id].x = data[i].x
+
+          game.add.tween(DOGS[data[i].id]).to( {x: data[i].x, y: data[i].y- 34}, 50, Phaser.Easing.Linear.None, true, 0, 0, false)
+
+//          game.add.tween(DOGS[data[i].id]).to( {y: data[i].y - 34}, 30, Phaser.Easing.Linear.None, true, 0, 0, false)
+
+
+//          DOGS[data[i].id].y = data[i].y - 34
           if (!data[i].rolling && !data[i].tripping){
             if (data[i].ySpeed > 1){
               DOGS[data[i].id].animations.play('jumpdown');
@@ -228,19 +210,29 @@ var playState = {
             DOGS[data[i].id].animations.play('kill')
           }
           else if(data[i].rolling){
-            DOGS[data[i].id].animations.play('jumpdown');
+            DOGS[data[i].id].animations.play('kicking', 7, true);
           }
-         //stamina text
-/*          if (data[i].id === socketId){
-            stamina_text.text = 'Stamina: ' + Math.ceil(data[i].stamina);
-            if (data[i].stamina === 100){
-              stamina_text.tint = 0xFFFFFF;
-            }
-            else{
-              stamina_text.tint = 0xFF0000;
-            }
+
+          if (DOGS[data[i].id].animations.currentAnim.name == 'running'){
+            DOGS[data[i].id].dustcounter += 1;
           }
-*/
+          else{
+            DOGS[data[i].id].dustcounter = 0;            
+          }
+
+          if (DOGS[data[i].id].dustcounter >= 8){
+            DOGS[data[i].id].dustcounter = 0;
+            var dustparticle = game.add.sprite(DOGS[data[i].id].x + 25, DOGS[data[i].id].y + 48, 'dust');
+            background_group.add(dustparticle)
+            dustparticle.scale.x = 0.5
+            dustparticle.scale.y = 0.5
+//            dustparticle.tint = 0x000000;
+            game.add.tween(dustparticle).to( {alpha: 0}, 400, Phaser.Easing.Quadratic.In, true, 0, 0, false)
+            game.add.tween(dustparticle).to( {x: dustparticle.x - 20 - Math.random() * 20, y: dustparticle.y - 10}, 250, Phaser.Easing.Quadratic.Out, true, 0, 0, false)
+            game.add.tween(dustparticle.scale).to( {x: 1, y:1 }, 250, Phaser.Easing.Linear.None, true, 0, 0, false)
+
+          }
+
         }
       }
     })
@@ -272,7 +264,11 @@ var playState = {
     socket.on('gameSpeed', function(data){
 
       for (i = 1; i <= 12; i++) {
-        BACK[i].tilePosition.x -= back_factor[i - 1] * data[0]
+
+        game.add.tween(BACK[i].tilePosition).to( {x: BACK[i].tilePosition.x - back_factor[i - 1] * data[0]}, 50, Phaser.Easing.Linear.None, true, 0, 0, false)
+
+
+//        BACK[i].tilePosition.x -= back_factor[i - 1] * data[0]
 
       }
 
@@ -282,13 +278,13 @@ var playState = {
 */ 
     })
 
-
+/*
     var fullscreen = this.add.sprite(50, 50, 'fullscreen');
     fullscreen.anchor.set(0.5);
     fullscreen.inputEnabled = true;
 
     fullscreen.events.onInputDown.add(goFullScreen, this);
-
+*/
   },
 
   update: function(){

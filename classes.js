@@ -1,7 +1,10 @@
+var game_speed = 14
+
+
 var Player = function(id, PLAYER_LIST, slot){
 	var self = {
 		slot:slot,
-		x: Math.random() * 400 + 20,
+		x: Math.random() * 200 + 20,
 		y: 200,
 		id: id,
 		alive: true,
@@ -31,8 +34,8 @@ var Player = function(id, PLAYER_LIST, slot){
 		}
 
 		//is in front
-		if (self.x > 400){
-			self.score += 10;
+		if (self.x > 345){
+			self.score += 2;
 			self.xSpeed = -10;
 			self.ySpeed = -11;
 			self.xAccel = 0.7;
@@ -41,11 +44,11 @@ var Player = function(id, PLAYER_LIST, slot){
 		}
 
 		if (self.canmove_timer > 0){
-			self.canmove_timer -= 1;
+			self.canmove_timer -= 1 / 7 * game_speed;
 		}
 
 		//is in back
-		if (self.x < 20){
+		if (self.x < -20){
 			self.score -= 5;
 			self.xSpeed = 0;
 			self.ySpeed = 0;
@@ -83,10 +86,10 @@ var Player = function(id, PLAYER_LIST, slot){
 			}
 		}
 
-		self.xSpeed += self.xAccel - 0.1;
-		self.ySpeed += self.yAccel;
-		self.x = Math.min(self.x + self.xSpeed, 500);
-		self.y += self.ySpeed;
+		self.xSpeed += (self.xAccel - 0.1) / 7 * game_speed;
+		self.ySpeed += self.yAccel / 7 * game_speed ;
+		self.x += self.xSpeed / 7 * game_speed;
+		self.y += self.ySpeed / 7 * game_speed;
 		if (self.y > 200){
 			if (self.canmove_timer == 0){
 				self.canmove = true;
@@ -97,14 +100,14 @@ var Player = function(id, PLAYER_LIST, slot){
 		}
 		//rolling
 		if (self.rolling_timer > 0){
-			self.rolling_timer -= 1;
+			self.rolling_timer -= 1 / 7 * game_speed;
 		}
 		else if (self.rolling){
 			self.rolling = false;
 			self.xSpeed = 0;
 		}
 		if (self.tripping_timer > 0){
-			self.tripping_timer -= 1;
+			self.tripping_timer -= 1 / 7 * game_speed;
 		}
 		else if (self.tripping){
 			self.tripping = false;
@@ -148,7 +151,7 @@ var Player = function(id, PLAYER_LIST, slot){
 			}
 			if (self.y < 197 && !self.dashing && self.stamina === 100){
 				self.dashing = true;
-				self.xSpeed += 8;
+				self.xSpeed += 10;
 				self.ySpeed = -5;
 				self.stamina = 0;
 			}
