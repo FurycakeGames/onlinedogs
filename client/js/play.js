@@ -1,19 +1,9 @@
 var playState = {
   create: function(){
 
-    goFullScreen = function() {
-//      this.game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
-/*      if (this.game.scale.isFullScreen) {
-        this.game.scale.stopFullScreen();
-      } 
-      else {
-        this.game.scale.startFullScreen();
-        this.game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;
-      }
-*/    }
-
-
     var username = window.location.search.substring(10, window.location.search.length);
+
+    socket.emit('setUsername', username);
 
     var background_group = game.add.group();
 
@@ -25,15 +15,11 @@ var playState = {
     game_group.pivot.x = game.width / 2;
     game_group.pivot.y = game.height / 2;
 
-
-
-
     var DOGS = {};
     var DOGS_HUD = {};
     var DOGS_HUD_TAG = {};
     var DOGS_HUD_SCORE = {};
     var OBSTACLE_A = {};
-    //background create
     var BACK = {};
 
     for (i = 12; i >= 1; i--) {
@@ -71,7 +57,7 @@ var playState = {
       }
     })
 
-    socket.emit('setUsername', username);
+
 
     socket.on('usergone', function(data){
       console.log(data)
@@ -219,20 +205,19 @@ var playState = {
           else{
             DOGS[data[i].id].dustcounter = 0;            
           }
-
+/*
           if (DOGS[data[i].id].dustcounter >= 8){
             DOGS[data[i].id].dustcounter = 0;
             var dustparticle = game.add.sprite(DOGS[data[i].id].x + 25, DOGS[data[i].id].y + 48, 'dust');
             background_group.add(dustparticle)
             dustparticle.scale.x = 0.5
             dustparticle.scale.y = 0.5
-//            dustparticle.tint = 0x000000;
+            dustparticle.tint = 0x000000;
             game.add.tween(dustparticle).to( {alpha: 0}, 400, Phaser.Easing.Quadratic.In, true, 0, 0, false)
             game.add.tween(dustparticle).to( {x: dustparticle.x - 20 - Math.random() * 20, y: dustparticle.y - 10}, 250, Phaser.Easing.Quadratic.Out, true, 0, 0, false)
             game.add.tween(dustparticle.scale).to( {x: 1, y:1 }, 250, Phaser.Easing.Linear.None, true, 0, 0, false)
-
           }
-
+*/
         }
       }
     })
@@ -264,27 +249,12 @@ var playState = {
     socket.on('gameSpeed', function(data){
 
       for (i = 1; i <= 12; i++) {
-
         game.add.tween(BACK[i].tilePosition).to( {x: BACK[i].tilePosition.x - back_factor[i - 1] * data[0]}, 50, Phaser.Easing.Linear.None, true, 0, 0, false)
-
-
-//        BACK[i].tilePosition.x -= back_factor[i - 1] * data[0]
-
       }
 
-/*      back_3.tilePosition.x -= data[0] * 0.0015;
-      back_4.tilePosition.x -= data[0] * 0.05;
-      floor.tilePosition.x -= data[0] * 0.5;
-*/ 
     })
 
-/*
-    var fullscreen = this.add.sprite(50, 50, 'fullscreen');
-    fullscreen.anchor.set(0.5);
-    fullscreen.inputEnabled = true;
 
-    fullscreen.events.onInputDown.add(goFullScreen, this);
-*/
   },
 
   update: function(){

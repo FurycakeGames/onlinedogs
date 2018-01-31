@@ -12,18 +12,13 @@ var bootState = {
 
   init:function() {
 
-//    Phaser.Canvas.setImageRenderingCrisp(game.canvas);
+	game.scale.pageAlignHorizontally = true;
+	game.scale.pageAlignVertically = true;
 
+	if (!game.device.desktop){
+		game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+	}
 
-  	if(game.device.desktop) {
-		// desktop view - desktop code here
-
-		 
-		} else {
-//	    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-		}
-		game.scale.pageAlignHorizontally = true;
-		game.scale.pageAlignVertically = true;
 
 
   },
